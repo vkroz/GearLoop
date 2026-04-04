@@ -11,7 +11,7 @@ Claude Code plugin for AI-assisted SDLC: definition, architecture, planning, imp
 1. Install the plugin. 
 
 ```bash
-/plugin install spec-to-code@<marketplace-name>
+claude plugin install spec-to-code@<marketplace-name>
 ```
 
 or install from local directory:
@@ -60,6 +60,13 @@ claude --plugin-dir /path/to/spec-to-code
 - **Maintenance** — `/stc:create-task task` → `/stc:implement-task` → `/stc:qa-integration-test`
 - **Incremental feature** — same as new product, but `/stc:define-product` amends existing docs
 - **Codebase optimization** — `/stc:codebase-review` → `/stc:plan` → `/stc:implement-phase` → `/stc:qa-system-test`
+
+## Example use cases
+
+- **Build a new product from scratch** — `/stc:define-product` → `/stc:design` → `/stc:plan` → `/stc:implement-plan` → `/stc:qa-system-test`. Claude facilitates writing specs, designs the architecture, generates a phased task plan, then autonomously implements and tests each task.
+- **Fix a bug** — `/stc:create-task bug` → `/stc:implement-task` → `/stc:qa-integration-test`. Claude captures the defect, investigates root cause, implements the fix with tests, and validates no regressions.
+- **Add a feature to an existing product** — `/stc:define-product` amends existing docs with the new feature, then the standard design → plan → implement → QA flow executes scoped to that feature.
+- **Audit and reduce technical debt** — `/stc:codebase-review` produces a prioritized report of duplication, drift, and fragmentation; `/stc:plan` → `/stc:implement-phase` executes the approved improvements.
 
 ## Project layout created by workflows
 
