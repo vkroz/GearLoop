@@ -1,13 +1,19 @@
+---
+globs: ["docs/**", "tasks/**"]
+description: "Use when managing tasks"
+---
+
 ## Task Lifecycle
 
-Every task moves through three states:
+Every task moves through four states:
 
 ```
-backlog → active → done
+intake → backlog → active → done
 ```
 
 | State | Meaning |
 |-------|---------|
+| **intake** | New task, waiting to be reviewed |
 | **backlog** | Defined and waiting to be picked up |
 | **active** | Currently being worked on |
 | **done** | Completed and verified |
@@ -18,6 +24,7 @@ Tasks are stored as Markdown files under the `tasks/` directory. Each lifecycle 
 
 ```
 tasks/
+  intake/
   backlog/
   active/
   done/
@@ -46,7 +53,7 @@ Every task file must contain a YAML header with at minimum the task status:
 
 ```yaml
 ---
-status: backlog | active | done
+status: intake | backlog | active | done
 ---
 ```
 

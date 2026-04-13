@@ -1,5 +1,5 @@
 ---
-name: init
+name: load-rules
 description: Load spec-to-code rules into the current session. Run this once at session start if you are not using the stc agent. Rules persist until context compaction.
 disable-model-invocation: true
 ---
@@ -20,4 +20,4 @@ The following rules govern all spec-to-code SDLC skills. They are loaded into yo
 
 ---
 
-Rules loaded. You can now use any `/stc:*` skill with these rules active. If the session compacts, run `/stc:init` again.
+Rules loaded. You can now use any `/stc:*` skill with these rules active. If the session compacts, run `/stc:load-rules` again.

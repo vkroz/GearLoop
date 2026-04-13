@@ -47,7 +47,7 @@ An MCP could provide deterministic tooling for: SDLC state computation (scan doc
 - Finding 2 (validation) → structural part moves to hooks; semantic part stays in skills but with embedded checklists
 - Finding 5 (DAG) → YAML fields in tasks + hook to validate; or MCP in v2
 - Finding 6 (resume) → agent carries recovery guidance; `/stc:status` skill for user-facing report
-- Finding 8 (skill composition) → agent carries the `implement-task` contract as persistent context, so batch skills inherit it automatically
+- Finding 8 (skill composition) → agent carries the `implement` per-task contract as persistent context, so batch modes inherit it automatically
 - Finding 9 (architecture check) → agent carries "always verify against architecture before coding" as persistent behavior, not just a skill instruction
 
 ---
@@ -96,7 +96,7 @@ An MCP could provide deterministic tooling for: SDLC state computation (scan doc
 
 **Problem:** Task YAML has only `status` (and optionally `type`). No `depends_on`, no `phase` field. Task ordering lives as prose in `implementation-plan.md`.
 
-**Why it matters:** `implement-phase` and `implement-plan` cannot mechanically determine execution order — they rely on the agent re-reading prose and inferring. Fragile, non-verifiable, blocks future parallel execution.
+**Why it matters:** `implement plan` mode cannot mechanically determine execution order — it relies on the agent re-reading prose and inferring. Fragile, non-verifiable, blocks future parallel execution.
 
 **Recommendation:** Extend task YAML:
 ```yaml
@@ -115,7 +115,7 @@ Update `plan` skill to populate these fields. Implementation skills read them fo
 
 **Problem:** No way to detect partial workflow state after a session interruption. The user must manually inspect `docs/` and `tasks/` to figure out where things stopped.
 
-**Why it matters:** Multi-session execution (the common case for `implement-plan`) is manual and error-prone after interruptions.
+**Why it matters:** Multi-session execution (the common case for `implement plan`) is manual and error-prone after interruptions.
 
 **Recommendation:** Add `/stc:status` skill that scans artifacts and task states, reports SDLC progress, identifies the next expected action, and flags inconsistencies.
 
@@ -133,21 +133,21 @@ Update `plan` skill to populate these fields. Implementation skills read them fo
 
 ## 8. Skill composition is not enforced
 
-**Problem:** `implement-phase` says "execute the implement-task workflow" but skills don't call each other mechanically. The agent must re-implement the inner skill's logic inline.
+**Problem:** Batch execution modes say "execute the per-task workflow" but skills don't call each other mechanically. The agent must re-implement the inner skill's logic inline.
 
 **Why it matters:** The agent takes shortcuts in batch mode — skips detailed design, skips per-task confirmation — because the outer skill doesn't restate the inner skill's contract.
 
-**Recommendation:** `implement-phase` and `implement-plan` must restate the non-negotiable steps of `implement-task` explicitly: activate, detailed design, implement with tests, user confirmation, move to done. No compression in batch mode.
+**Recommendation:** The `implement` skill's `phase` and `all` modes must restate the non-negotiable per-task steps explicitly: activate, detailed design, implement with tests, user confirmation, move to done. No compression in batch mode.
 
 ---
 
 ## 9. No architecture compliance check during implementation
 
-**Problem:** `implement-task` mentions `docs/architecture.md` in passing ("informed by") but does not require explicit verification that the detailed design aligns with architecture constraints.
+**Problem:** The `implement` skill (task mode) mentions `docs/architecture.md` in passing ("informed by") but does not require explicit verification that the detailed design aligns with architecture constraints.
 
 **Why it matters:** Over many tasks, implementation drifts from architecture. Each task is locally correct but globally inconsistent.
 
-**Recommendation:** Add a checkpoint to `implement-task`: "Before coding, verify detailed design against `docs/architecture.md` constraints. If it violates any, flag to user before proceeding."
+**Recommendation:** Add a checkpoint to the `implement` skill: "Before coding, verify detailed design against `docs/architecture.md` constraints. If it violates any, flag to user before proceeding."
 
 ---
 
@@ -157,7 +157,7 @@ Update `plan` skill to populate these fields. Implementation skills read them fo
 
 **Why it matters:** The agent silently drops context, producing output inconsistent with existing documents. Dangerous during implementation where task + architecture + spec must coexist.
 
-**Recommendation:** Each skill should specify its required reading list (e.g., `implement-task` needs: task file, architecture doc, relevant spec sections — not the full vision/spec/requirements/plan). Add explicit instruction to re-read at task start rather than relying on prior context.
+**Recommendation:** Each skill should specify its required reading list (e.g., `implement` task mode needs: task file, architecture doc, relevant spec sections — not the full vision/spec/requirements/plan). Add explicit instruction to re-read at task start rather than relying on prior context.
 
 ---
 

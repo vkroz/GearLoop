@@ -9,7 +9,7 @@ depends_on: [20260404_01_consolidate_agent_prompt]
 
 ## Problem
 
-`design` skill says "Draft `docs/architecture.md`" with no template, no required sections, no evaluation criteria. The agent infers architecture document structure from training. Produces inconsistent architecture documents across projects. Downstream skills (plan, implement-task) encounter unpredictable structures when reading the architecture.
+`design` skill says "Draft `docs/architecture.md`" with no template, no required sections, no evaluation criteria. The agent infers architecture document structure from training. Produces inconsistent architecture documents across projects. Downstream skills (plan, implement) encounter unpredictable structures when reading the architecture.
 
 ## Scope
 
@@ -21,7 +21,7 @@ depends_on: [20260404_01_consolidate_agent_prompt]
 
 **Out of scope:**
 - Technology-stack-specific architecture patterns
-- Detailed design templates (those belong in implement-task)
+- Detailed design templates (those belong in the implement skill)
 - Changing the workflow (draft → review → validate → consistency check → gate)
 
 ## Acceptance Criteria

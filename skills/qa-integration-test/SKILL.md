@@ -1,6 +1,6 @@
 ---
 name: qa-integration-test
-description: Integration testing — verify new work works with the running app and prior phases/regressions. Invoke after a phase or after ad-hoc /stc:implement-task when integration coverage is needed.
+description: Integration testing — verify new work works with the running app and prior phases/regressions. Invoke after a phase or after ad-hoc /stc:implement task when integration coverage is needed.
 ---
 
 # QA Integration Test (`/stc:qa-integration-test`)

@@ -1,6 +1,7 @@
 ---
 name: create-task
 description: Create a new task file in tasks/backlog/ — either a development task or a bug ticket. Invoke with /stc:create-task. Optionally pass type as an argument (task | bug).
+argument-hint: task <title> | bug <title>
 ---
 
 # Create Task (`/stc:create-task`)
@@ -93,7 +94,7 @@ Sections:
 - Risks & rollback
 
 ### 6. Confirm
-Stop after the file is written. User confirms the task is ready for **`/stc:implement-task`** (or `/stc:plan` if part of a larger plan). Do not proceed to implementation.
+Stop after the file is written. User confirms the task is ready for **`/stc:implement task`** (or `/stc:plan` if part of a larger plan). Do not proceed to implementation.
 
 
 
@@ -133,7 +134,7 @@ Sections:
 - Risks & impact
 
 ### 6. Confirm
-Stop after the file is written. User confirms the ticket is complete and actionable before moving to **`/stc:implement-task`**.
+Stop after the file is written. User confirms the ticket is complete and actionable before moving to **`/stc:implement task`**.
 
 ---
 

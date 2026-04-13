@@ -1,9 +1,9 @@
 ---
-name: plan
-description: Planning stage — produce implementation plan and task files in tasks/backlog/. Invoke with /stc:plan after architecture exists.
+name: create-plan
+description: Create a new implementation plan and task files in tasks/backlog/. Invoke with /stc:create-plan after architecture exists.
 ---
 
-# Plan (`/stc:plan`)
+# Create Plan (`/stc:create-plan`)
 
 ## Preconditions
 **Required before starting:**
@@ -41,4 +41,4 @@ Each task file MUST follow the task management standard (YAML `status`, problem,
 
 ## Discipline
 - Task naming: `YYYYMMDD[_NN]_<description>.md` (lowercase, underscores).
-- Do not mark tasks `active` or `done` here; that happens under `/stc:implement-task`.
+- Do not mark tasks `active` or `done` here; that happens under `/stc:implement`.

@@ -1,3 +1,7 @@
+---
+alwaysApply: true
+---
+
 # CRITICAL RULES
 
 ## Have laser focus on current task

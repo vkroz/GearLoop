@@ -135,7 +135,7 @@ The user identifies a specific maintenance need — such as refactoring a module
 
 - **How it is done**:
     - The user creates a task in `tasks/backlog/` using the `create-task` skill, with a clear problem statement, scope, and acceptance criteria. The task type should reflect the nature of the work (e.g. `task`, `bug`, `refactor`, `upgrade`, `chore`).
-    - The agent picks up the task using the `implement-task` skill and executes it following the same Implementation process as in new product development: detailed design first, then code, then unit tests.
+    - The agent picks up the task using the `implement` skill (mode: task) and executes it following the same Implementation process as in new product development: detailed design first, then code, then unit tests.
     - Architecture impact check: if the task requires architectural changes, the agent must flag this and enter an interactive discussion with the user before proceeding.
     - Integration and regression tests are run after the task is complete to confirm nothing is broken. See the Integration test and System test steps in the Bug fixes workflow for reference — the same process applies here.
     - The user approves the task as done once all quality gates pass.
@@ -186,11 +186,11 @@ spec-to-code is packaged as a **Claude Code plugin** (name: `stc`). Users instal
 
 The plugin ships:
 - **`stc` agent** — default agent whose system prompt contains the behavioral rules (first-principles, task-management standard). Activated via `settings.json`. Rules load once at session start and survive compaction.
-- **13 skills** covering the full SDLC: `/stc:init` (manual rule loader), `/stc:define-product`, `/stc:design`, `/stc:plan`, `/stc:implement-task`, `/stc:implement-phase`, `/stc:implement-plan`, `/stc:qa-integration-test`, `/stc:qa-system-test`, `/stc:create-task`, `/stc:codebase-review`, `/stc:comment-code`, `/stc:commit-code`.
-- **Canonical rules** in `rules/first-principles.md` and `rules/task-management.md` — single source of truth used by both the agent and `/stc:init`.
+- **11 skills** covering the full SDLC: `/stc:load-rules` (manual rule loader), `/stc:define-product`, `/stc:design`, `/stc:plan`, `/stc:implement` (modes: `task`, `plan`, `plan ... phase N`), `/stc:qa-integration-test`, `/stc:qa-system-test`, `/stc:create-task`, `/stc:codebase-review`, `/stc:comment-code`, `/stc:commit-code`.
+- **Canonical rules** in `rules/first-principles.md` and `rules/task-management.md` — single source of truth used by both the agent and `/stc:load-rules`.
 - **Artifacts:** `tasks/` directory (backlog / active / done), `docs/*` specs, designs, architecture, plans.
 
-What works: a developer runs `/stc:implement-task` on a well-defined task file and the agent implements and unit-tests it with minimal intervention. When tasks are unambiguous, agent output quality is high.
+What works: a developer runs `/stc:implement task` on a well-defined task file and the agent implements and unit-tests it with minimal intervention. When tasks are unambiguous, agent output quality is high.
 
 
 ## What is needed next
@@ -245,10 +245,10 @@ Review cycle:
 3. Specs/requirements updated if needed.
 4. User approves.
 
-**Implementation** — one of:
-- `/stc:implement-task <task>` — single task
-- `/stc:implement-phase <N>` — all tasks in a phase
-- `/stc:implement-plan` — full plan
+**Implementation** — `/stc:implement` with one of:
+- `/stc:implement task <path>` — single task
+- `/stc:implement plan <path>` — full plan (all phases)
+- `/stc:implement plan <path> phase <N,M,...>` — specific phase(s) of a plan
 
 Per task, the agent: (1) produces detailed design, (2) implements, (3) writes and runs tests. Blockers and ambiguities are surfaced to the user.
 
@@ -265,7 +265,7 @@ The agent reviews the full codebase against specs, runs the test suite, adds mis
 Precondition: existing product with documents in `docs/`.
 
 1. User creates a bug ticket: `/stc:create-task bug` — provides observed problem, expected result, actual result, reproduction steps.
-2. User runs `/stc:implement-task <defect-task>`.
+2. User runs `/stc:implement task <defect-task>`.
 3. Agent investigates root cause. Produces root cause analysis and fix plan.
 4. **Architecture gate**: if the fix requires architectural changes, the agent stops and discusses with the user before proceeding.
 5. Agent implements: detailed design → code → tests.
@@ -282,7 +282,7 @@ Precondition: existing product with documents in `docs/`.
 **Ad-hoc task:**
 
 1. User creates a task: `/stc:create-task task` (type: `refactor`, `upgrade`, `chore`, etc.).
-2. User runs `/stc:implement-task <task>`.
+2. User runs `/stc:implement task <task>`.
 3. Same execution flow as a single implementation task. Architecture gate applies.
 4. Integration test (`/stc:qa-integration-test`) + regression tests. User approves.
 
@@ -320,13 +320,13 @@ spec-to-code is a Claude Code plugin named `stc`. All skills are namespaced as `
 
 | Skill | Invocation | Drives | Input | Output |
 |-------|-----------|--------|-------|--------|
-| `init` | `/stc:init` | Rule loading (manual fallback) | None | Rules injected into session context |
+| `load-rules` | `/stc:load-rules` | Rule loading (manual fallback) | None | Rules injected into session context |
 | `define-product` | `/stc:define-product` | Definition stage | User input, reference materials | `docs/vision.md`, `docs/spec.md`, `docs/requirements.md` |
 | `design` | `/stc:design` | Architecture stage | Docs from Definition | `docs/architecture.md` |
 | `plan` | `/stc:plan` | Planning stage | Docs from Definition + Architecture | `docs/implementation-plan.md`, task files in `tasks/backlog/` |
-| `implement-task` | `/stc:implement-task <task>` | Single task execution | Task file | Code changes, test results |
-| `implement-phase` | `/stc:implement-phase <N>` | Phase execution | Implementation plan, task files | Working code, test results |
-| `implement-plan` | `/stc:implement-plan` | Full plan execution | Implementation plan, task files | Working code, test results |
+| `implement` | `/stc:implement task <path>` | Single task execution | Task file | Code changes, test results |
+| | `/stc:implement plan <path>` | Full plan execution | Implementation plan, task files | Working code, test results |
+| | `/stc:implement plan <path> phase N` | Phase execution | Implementation plan, task files | Working code, test results |
 | `qa-integration-test` | `/stc:qa-integration-test` | Integration testing | Codebase, specs, phase scope | Integration test report |
 | `qa-system-test` | `/stc:qa-system-test` | System testing | Full codebase, all docs | System test report |
 | `create-task` | `/stc:create-task` | Task / bug ticket creation | User input (optional: `task` or `bug`) | Task file in `tasks/backlog/` |
@@ -337,7 +337,7 @@ spec-to-code is a Claude Code plugin named `stc`. All skills are namespaced as `
 #### Skill behavior contract
 
 Every skill that drives a workflow stage must:
-1. **Validate preconditions** before starting. `/stc:design` requires definition docs to exist. `/stc:plan` requires architecture doc. `/stc:implement-phase` and `/stc:implement-plan` require an approved plan. `/stc:qa-system-test` requires a completed implementation. If preconditions are not met, the skill tells the user what is missing.
+1. **Validate preconditions** before starting. `/stc:design` requires definition docs to exist. `/stc:plan` requires architecture doc. `/stc:implement plan` requires an approved plan file. `/stc:qa-system-test` requires a completed implementation. If preconditions are not met, the skill tells the user what is missing.
 2. **Produce artifacts** as specified in the output column.
 3. **Run a validation cycle** after producing artifacts: self-review against rubrics, produce a report, address findings with user input.
 4. **Maintain document consistency**: if one document changes, dependent documents are reviewed and updated. The dependency chain is: vision → spec → requirements → architecture → implementation plan → tasks. Changes flow forward; upstream documents are updated only when downstream work reveals the need.
@@ -348,14 +348,14 @@ Every skill that drives a workflow stage must:
 Plugins don't support auto-loaded `.claude/rules/`. spec-to-code uses two mechanisms to load rules into the session:
 
 1. **`stc` agent (recommended)** — The plugin ships a default agent (`agents/stc.md`) activated via `settings.json`. Its system prompt contains both rule sets. Rules load once at session start and survive context compaction.
-2. **`/stc:init` skill (fallback)** — Manually injects rules via `!cat ${CLAUDE_SKILL_DIR}/../../rules/...`. For users who can't use the agent (e.g., conflict with another plugin). Does not survive compaction.
+2. **`/stc:load-rules` skill (fallback)** — Manually injects rules via `!cat ${CLAUDE_SKILL_DIR}/../../rules/...`. For users who can't use the agent (e.g., conflict with another plugin). Does not survive compaction.
 
 | Guardrail | Content | Source |
 |-----------|---------|--------|
 | Core Principles | YAGNI, KISS, DRY, single-task focus, clarify ambiguity, step-by-step approval, root-cause troubleshooting | `rules/first-principles.md` |
 | Task Management Standard | Task lifecycle (backlog → active → done), file structure, naming, approval model | `rules/task-management.md` |
 
-Skills themselves contain only workflow instructions — no inlined rules. They rely on the rules being present in the session via the agent or `/stc:init`.
+Skills themselves contain only workflow instructions — no inlined rules. They rely on the rules being present in the session via the agent or `/stc:load-rules`.
 
 ### User's Project Structure
 
@@ -413,7 +413,7 @@ Any change that touches the high-level architecture — whether discovered durin
 
 ### Task DAG Execution
 
-When executing multiple tasks (`/stc:implement-phase` or `/stc:implement-plan`), the agent respects phase boundaries and DAG dependencies. In v1, tasks run sequentially within a phase; parallel execution is deferred to a future version. Integration tests (`/stc:qa-integration-test`) run at phase boundaries. The user can interrupt execution at any phase boundary.
+When executing multiple tasks (`/stc:implement plan`), the agent respects phase boundaries and DAG dependencies. In v1, tasks run sequentially within a phase; parallel execution is deferred to a future version. Integration tests (`/stc:qa-integration-test`) run at phase boundaries. The user can interrupt execution at any phase boundary.
 
 ### Validation Rubrics
 
@@ -445,16 +445,16 @@ Cross-reference confirming that every workflow step maps to a plugin component.
 | New product → Definition | `define-product` | vision, spec, requirements | core principles |
 | New product → Architecture | `design` | architecture | core principles |
 | New product → Planning | `plan` | implementation-plan, task files | core principles, task-management |
-| New product → Implementation | `implement-task`, `implement-phase`, `implement-plan` | code, tests | core principles, task-management |
+| New product → Implementation | `implement` (task / phase / all) | code, tests | core principles, task-management |
 | New product → Integration test | `qa-integration-test` | integration test report | core principles |
 | New product → QA | `qa-system-test` | system test report | core principles |
 | Bug fix → Task creation | `create-task` | bug ticket file | task-management |
-| Bug fix → Fix | `implement-task` | code, tests, root cause analysis | core principles, task-management |
+| Bug fix → Fix | `implement` (task) | code, tests, root cause analysis | core principles, task-management |
 | Bug fix → Integration test | `qa-integration-test` | integration test report | core principles |
 | Bug fix → Regression | `qa-system-test` | system test report | core principles |
-| Maintenance → Ad-hoc | `create-task`, `implement-task` | task file, code, tests | core principles, task-management |
+| Maintenance → Ad-hoc | `create-task`, `implement` (task) | task file, code, tests | core principles, task-management |
 | Maintenance → Ad-hoc → Test | `qa-integration-test` | integration test report | core principles |
-| Maintenance → Optimization | `codebase-review`, `plan`, `implement-phase` | audit report, plan, code | core principles, task-management |
+| Maintenance → Optimization | `codebase-review`, `plan`, `implement` (phase) | audit report, plan, code | core principles, task-management |
 | Incremental feature | same as new product | same as new product (amended) | core principles, task-management |
 
-All four workflows are fully covered by 13 skills, 1 agent, and 2 rule files. Behavioral guardrails are loaded into the session via the `stc` agent (automatic) or `/stc:init` (manual fallback). No workflow step requires a component not listed in the plugin specification.
+All four workflows are fully covered by 11 skills, 1 agent, and 2 rule files. Behavioral guardrails are loaded into the session via the `stc` agent (automatic) or `/stc:load-rules` (manual fallback). No workflow step requires a component not listed in the plugin specification.

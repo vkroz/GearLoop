@@ -44,7 +44,7 @@ Improvements that build on the foundation and deepened skills.
 | Task | Description | Depends On |
 |------|-------------|------------|
 | 08 | Add `/stc:status` skill | 02 |
-| 09 | Strengthen implementation skills (`implement-task`, `implement-phase`, `implement-plan`) | 01 |
+| 09 | Strengthen implementation skill (`implement` — unified task/phase/all) | 01 |
 | 10 | Add SDLC document review to `codebase-review` | — |
 | 11 | Resolve `tasks/intake/` directory | — |
 
